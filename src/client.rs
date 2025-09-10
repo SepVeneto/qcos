@@ -134,8 +134,16 @@ impl Client {
         acl_header: Option<AclHeader>,
         origin_headers: Option<HeaderMap>,
     ) -> String {
+        // h5默认只传host请求头
+        let headers = if origin_headers.is_none() {
+            let mut headers = HeaderMap::new();
+            headers.insert(HOST, HeaderValue::from_str(&self.get_host()).unwrap());
+            Some(headers)
+        } else {
+            origin_headers
+        };
         let url_path = self.get_path_from_object_key(object_key);
-        let header = self.get_headers_with_auth("put", &url_path, acl_header, origin_headers, None);
+        let header = self.get_headers_with_auth("put", &url_path, acl_header, headers, None);
         header
             .get(AUTHORIZATION)
             .unwrap()
